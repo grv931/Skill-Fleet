@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Register as {{ role|capitalize }} | SkillFleet{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="auth-card card">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="auth-icon mb-3">
+                        {% if role == 'professional' %}
+                            <i class="bi bi-person-badge-fill"></i>
+                        {% else %}
+                            <i class="bi bi-person-plus-fill"></i>
+                        {% endif %}
+                    </div>
+                    <h1 class="h3 fw-bold">
+                        {% if role == 'professional' %}
+                            Join as a Professional
+                        {% else %}
+                            Create Your Account
+                        {% endif %}
+                    </h1>
+                    <p class="text-muted">
+                        {% if role == 'professional' %}
+                            Register to start offering your services
+                        {% else %}
+                            Sign up to book household services
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Role Toggle -->
+                <div class="d-flex justify-content-center mb-4">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('auth.register_customer') }}"
+                           class="btn {% if role == 'customer' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            <i class="bi bi-person"></i> Customer
+                        </a>
+                        <a href="{{ url_for('auth.register_professional') }}"
+                           class="btn {% if role == 'professional' %}btn-success{% else %}btn-outline-success{% endif %}">
+                            <i class="bi bi-person-badge"></i> Professional
+                        </a>
+                    </div>
+                </div>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="name" class="form-label fw-semibold">Full Name *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-person"></i></span>
+                                {{ form.name(class="form-control border-start-0 ps-0", placeholder="John Doe", id="name") }}
+                            </div>
+                            {% for error in form.name.errors %}
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label fw-semibold">Email Address *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                                {{ form.email(class="form-control border-start-0 ps-0", placeholder="john@example.com", id="email") }}
+                            </div>
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
+                                {{ form.phone(class="form-control border-start-0 ps-0", placeholder="9876543210", id="phone") }}
+                            </div>
+                            {% for error in form.phone.errors %}
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label fw-semibold">Password *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+                                {{ form.password(class="form-control border-start-0 ps-0", placeholder="••••••••", id="password") }}
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label fw-semibold">Confirm Password *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-shield-lock"></i></span>
+                                {{ form.confirm_password(class="form-control border-start-0 ps-0", placeholder="••••••••", id="confirm_password") }}
+                            </div>
+                            {% for error in form.confirm_password.errors %}
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label fw-semibold">Service Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-geo-alt"></i></span>
+                            {{ form.address(class="form-control border-start-0 ps-0", placeholder="Street, locality, city", rows="2", id="address") }}
+                        </div>
+                        {% for error in form.address.errors %}
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pin_code" class="form-label fw-semibold">Pin Code *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-map"></i></span>
+                            {{ form.pin_code(class="form-control border-start-0 ps-0", placeholder="110001", id="pin_code") }}
+                        </div>
+                        {% for error in form.pin_code.errors %}
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if role == 'professional' %}
+                        <hr class="my-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-briefcase"></i> Professional Profile</h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="service_type" class="form-label fw-semibold">Service Specialization *</label>
+                                {{ form.service_type(class="form-select", id="service_type") }}
+                                {% for error in form.service_type.errors %}
+                                    <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="experience" class="form-label fw-semibold">Experience (years) *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-star"></i></span>
+                                    {{ form.experience(class="form-control border-start-0 ps-0", placeholder="e.g. 5", id="experience") }}
+                                </div>
+                                {% for error in form.experience.errors %}
+                                    <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">About Yourself & Qualifications *</label>
+                            {{ form.description(class="form-control", placeholder="Describe your expertise, credentials, and work history...", rows="3", id="description") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="alert alert-info py-2 shadow-sm border-0 bg-info-subtle text-info">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Account Approval:</strong> Admin reviews all professional accounts manually. You will gain access once verified.
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn {% if role == 'professional' %}btn-success{% else %}btn-primary{% endif %} btn-lg w-100 mt-4 shadow-sm">
+                        <i class="bi bi-person-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted">Already have an account?
+                        <a href="{{ url_for('auth.login') }}">Sign in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
