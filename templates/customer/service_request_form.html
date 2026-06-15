@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | SkillFleet{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('customer.search') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Services
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Booking Form -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent p-4 pb-0 border-0">
+                <h1 class="h4 fw-bold mb-0">
+                    <i class="bi bi-calendar-check text-primary"></i> Book Service Request
+                </h1>
+                <p class="text-muted small mt-1 mb-0">Please fill out the preferred schedule and service location details.</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="preferred_date" class="form-label fw-semibold">Preferred Schedule Date *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+                            {{ form.preferred_date(class="form-control border-start-0 ps-0", id="preferred_date") }}
+                        </div>
+                        {% for error in form.preferred_date.errors %}
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="customer_address" class="form-label fw-semibold">Service Address *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-geo-alt"></i></span>
+                            {{ form.customer_address(class="form-control border-start-0 ps-0", placeholder="House number, street, landmark...", rows="2", id="customer_address") }}
+                        </div>
+                        {% for error in form.customer_address.errors %}
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="customer_pin_code" class="form-label fw-semibold">Pin Code *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-map"></i></span>
+                            {{ form.customer_pin_code(class="form-control border-start-0 ps-0", placeholder="e.g. 110001", id="customer_pin_code") }}
+                        </div>
+                        {% for error in form.customer_pin_code.errors %}
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="remarks" class="form-label fw-semibold">Remarks / Special Instructions</label>
+                        {{ form.remarks(class="form-control", placeholder="Tell the professional if you have any special requirements, e.g. 'leak is in bathroom sink, bring a pipe wrench'...", rows="3", id="remarks") }}
+                        {% for error in form.remarks.errors %}
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm py-2.5">
+                        <i class="bi bi-send-fill"></i> Confirm Booking Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Booking Summary & Policy -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent p-4 pb-0 border-0">
+                <h5 class="fw-bold mb-0"><i class="bi bi-receipt text-primary"></i> Service Invoice Summary</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">{{ service.name }}</span>
+                    <span class="fw-semibold text-dark">₹{{ "%.2f"|format(service.base_price) }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Platform Safety Fee</span>
+                    <span class="fw-semibold text-success">FREE</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Estimated Duration</span>
+                    <span class="fw-semibold text-dark">{{ service.time_required }} minutes</span>
+                </div>
+                <hr class="text-muted opacity-10">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold fs-5 text-dark">Total Cost Estimate</span>
+                    <span class="fw-bold fs-5 text-primary">₹{{ "%.2f"|format(service.base_price) }}</span>
+                </div>
+                <p class="text-muted small mb-0"><i class="bi bi-info-circle"></i> Payment is collected directly by the service professional upon completion of the task.</p>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm bg-primary-subtle text-primary border-start border-primary border-3">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-2"><i class="bi bi-shield-check"></i> SkillFleet Trust Policy</h6>
+                <ul class="small mb-0 ps-3">
+                    <li>Only verified and background-checked professionals will accept your request.</li>
+                    <li>You can cancel or reschedule the request at any time before it is accepted.</li>
+                    <li>Need support? Connect with our chat coordinator from your dashboard.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Restrict date picker to today or future dates
+    const dateInput = document.getElementById('preferred_date');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+    }
+});
+</script>
+{% endblock %}

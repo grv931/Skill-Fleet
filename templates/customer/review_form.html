@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Leave a Review | SkillFleet{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="mb-4">
+            <a href="{{ url_for('customer.my_requests') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to My Requests
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-transparent">
+                <h1 class="h4 fw-bold mb-0"><i class="bi bi-star"></i> Leave a Review</h1>
+            </div>
+            <div class="card-body p-4">
+                <!-- Service Summary -->
+                <div class="bg-light rounded-3 p-3 mb-4">
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Service</small>
+                            <span class="fw-bold">{{ service_request.service.name }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Professional</small>
+                            <span class="fw-bold">{{ service_request.professional.name if service_request.professional else '—' }}</span>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Requested</small>
+                            <span>{{ service_request.date_of_request.strftime('%d %b %Y') }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Completed</small>
+                            <span>{{ service_request.date_of_completion.strftime('%d %b %Y') if service_request.date_of_completion else '—' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold d-block">Rating *</label>
+                        <div style="display: none;">
+                            {{ form.rating(id="ratingSelect") }}
+                        </div>
+                        <div class="star-rating mb-2">
+                            <input type="radio" id="star5" name="star_rating" value="5">
+                            <label for="star5" title="Excellent"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" id="star4" name="star_rating" value="4">
+                            <label for="star4" title="Very Good"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" id="star3" name="star_rating" value="3">
+                            <label for="star3" title="Good"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" id="star2" name="star_rating" value="2">
+                            <label for="star2" title="Fair"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" id="star1" name="star_rating" value="1">
+                            <label for="star1" title="Poor"><i class="bi bi-star-fill"></i></label>
+                        </div>
+                        {% for error in form.rating.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="comment" class="form-label fw-semibold">Your Review Details</label>
+                        {{ form.comment(class="form-control", placeholder="Share your experience working with this professional...", rows="4", id="comment") }}
+                        {% for error in form.comment.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-warning btn-lg w-100 shadow-sm py-2">
+                        <i class="bi bi-star-fill"></i> Submit Review
+                    </button>
+                </form>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const ratingSelect = document.getElementById('ratingSelect');
+                    const starRadios = document.querySelectorAll('input[name="star_rating"]');
+                    if (ratingSelect && ratingSelect.value) {
+                        const matching = document.getElementById('star' + ratingSelect.value);
+                        if (matching) matching.checked = true;
+                    }
+                    starRadios.forEach(radio => {
+                        radio.addEventListener('change', () => {
+                            if (ratingSelect) {
+                                ratingSelect.value = radio.value;
+                            }
+                        });
+                    });
+                });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
