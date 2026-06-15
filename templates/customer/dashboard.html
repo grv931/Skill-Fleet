@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | SkillFleet{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold mb-1">Welcome, {{ current_user.name }}! 👋</h1>
+        <p class="text-muted mb-0">Here's an overview of your service requests</p>
+    </div>
+    <a href="{{ url_for('customer.search') }}" class="btn btn-primary">
+        <i class="bi bi-search"></i> Find Services
+    </a>
+</div>
+
+<!-- ─── Stat Cards ────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--primary);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Total Requests</p>
+                        <h3 class="fw-bold mb-0">{{ total_requests }}</h3>
+                    </div>
+                    <div class="stat-icon text-primary">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--warning);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Active Requests</p>
+                        <h3 class="fw-bold mb-0">{{ active_requests|length }}</h3>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--success);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Completed</p>
+                        <h3 class="fw-bold mb-0">{{ total_closed }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Active Requests ──────────────────────────────────── -->
+<div class="card mb-4">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-lightning"></i> Active Requests</h5>
+        <a href="{{ url_for('customer.my_requests') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body">
+        {% if active_requests %}
+        <div class="row g-3">
+            {% for req in active_requests %}
+            <div class="col-md-6">
+                <div class="card request-card border h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">{{ req.service.name }}</h6>
+                            <span class="badge bg-status-{{ req.service_status }}">{{ req.service_status|capitalize }}</span>
+                        </div>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar"></i> {{ req.date_of_request.strftime('%d %b %Y') }}
+                            {% if req.preferred_date %}
+                                · Preferred: {{ req.preferred_date.strftime('%d %b %Y') }}
+                            {% endif %}
+                        </p>
+                        {% if req.professional %}
+                        <p class="small mb-2">
+                            <i class="bi bi-person-badge text-success"></i>
+                            <strong>{{ req.professional.name }}</strong>
+                            {% if req.professional.average_rating > 0 %}
+                                · <span class="text-warning"><i class="bi bi-star-fill"></i></span> {{ req.professional.average_rating }}
+                            {% endif %}
+                        </p>
+                        {% endif %}
+                        <div class="d-flex gap-2 mt-3">
+                            {% if req.service_status == 'requested' %}
+                                <a href="{{ url_for('customer.edit_request', request_id=req.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                            {% endif %}
+                            {% if req.service_status == 'assigned' %}
+                                <form method="POST" action="{{ url_for('customer.close_request', request_id=req.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-success"
+                                            onclick="return confirm('Close this service request?');">
+                                        <i class="bi bi-check-circle"></i> Close
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-primary chat-trigger"
+                                        data-req-id="{{ req.id }}"
+                                        data-prof-name="{{ req.professional.name }}"
+                                        data-service-name="{{ req.service.name }}">
+                                    <i class="bi bi-chat-left-dots"></i> Message Professional
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mt-2">No active requests. <a href="{{ url_for('customer.search') }}">Browse services</a> to get started!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ─── Recent Completed ─────────────────────────────────── -->
+{% if closed_requests %}
+<div class="card">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-check-circle"></i> Recently Completed</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>Completed</th>
+                        <th>Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in closed_requests %}
+                    <tr>
+                        <td class="fw-medium">{{ req.service.name }}</td>
+                        <td>{{ req.professional.name if req.professional else '—' }}</td>
+                        <td class="text-muted small">{{ req.date_of_completion.strftime('%d %b %Y') if req.date_of_completion else '—' }}</td>
+                        <td>
+                            {% if req.review %}
+                                <span class="text-warning">
+                                    {% for i in range(req.review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                                    {% for i in range(5 - req.review.rating) %}<i class="bi bi-star"></i>{% endfor %}
+                                </span>
+                            {% else %}
+                                <a href="{{ url_for('customer.review_request', request_id=req.id) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-star"></i> Leave Review
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Chat Modal -->
+<div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="chatModalLabel">Chat Coordinator</h5>
+                    <small class="text-muted" id="chatModalSubtitle"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-2 border-top-0">
+                <form id="chatForm" class="d-flex w-100 gap-2">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type your message here..." required>
+                    <button type="submit" class="btn btn-primary px-3"><i class="bi bi-send-fill"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatModalEl = document.getElementById('chatModal');
+    if (!chatModalEl) return;
+    
+    const chatModal = new bootstrap.Modal(chatModalEl);
+    const chatModalLabel = document.getElementById('chatModalLabel');
+    const chatModalSubtitle = document.getElementById('chatModalSubtitle');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    
+    let activeProfName = '';
+    let activeServiceName = '';
+    
+    // Set up triggers
+    document.querySelectorAll('.chat-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            activeProfName = trigger.getAttribute('data-prof-name');
+            activeServiceName = trigger.getAttribute('data-service-name');
+            
+            chatModalLabel.innerText = `Chat with ${activeProfName}`;
+            chatModalSubtitle.innerText = `Service: ${activeServiceName}`;
+            
+            // Set up initial simulated conversation
+            chatMessages.innerHTML = `
+                <div class="chat-bubble chat-bubble-received">
+                    Hello! I have been assigned to your request for <strong>${activeServiceName}</strong>.
+                </div>
+                <div class="chat-bubble chat-bubble-received">
+                    I will be visiting your address on the scheduled day. Do you have any specific instructions for me?
+                </div>
+            `;
+            
+            chatModal.show();
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 150);
+        });
+    });
+    
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msgText = chatInput.value.trim();
+        if (!msgText) return;
+        
+        // Append sent message
+        const sentBubble = document.createElement('div');
+        sentBubble.className = 'chat-bubble chat-bubble-sent';
+        sentBubble.innerText = msgText;
+        chatMessages.appendChild(sentBubble);
+        
+        chatInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Simulated reply after 1.2 seconds
+        setTimeout(() => {
+            const replies = [
+                "Understood! I'll keep that in mind.",
+                "Sure thing, I will call you when I reach your location.",
+                "Got it! I will bring all the required tools.",
+                "Thank you for the update! See you soon."
+            ];
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            
+            const replyBubble = document.createElement('div');
+            replyBubble.className = 'chat-bubble chat-bubble-received';
+            replyBubble.innerText = randomReply;
+            chatMessages.appendChild(replyBubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1200);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% block title %}Professional Dashboard | SkillFleet{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold mb-1">Welcome, {{ current_user.name }}! 🔧</h1>
+        <p class="text-muted mb-0">
+            {{ current_user.service_type.name if current_user.service_type else 'Service' }} Professional
+        </p>
+    </div>
+    <a href="{{ url_for('professional.requests') }}" class="btn btn-primary">
+        <i class="bi bi-inbox"></i> View All Requests
+    </a>
+</div>
+
+<!-- ─── Stat Cards ────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--warning);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Incoming</p>
+                        <h3 class="fw-bold mb-0">{{ incoming_requests|length }}</h3>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--primary);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Active Jobs</p>
+                        <h3 class="fw-bold mb-0">{{ active_requests|length }}</h3>
+                    </div>
+                    <div class="stat-icon text-primary">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--success);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Completed</p>
+                        <h3 class="fw-bold mb-0">{{ total_completed }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid #f59e0b;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Rating</p>
+                        <h3 class="fw-bold mb-0">
+                            {% if avg_rating > 0 %}
+                                {{ avg_rating }} <small class="text-muted fs-6">({{ total_reviews }})</small>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Incoming Requests ────────────────────────────────── -->
+<div class="card mb-4">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-envelope-open text-warning"></i> Incoming Requests</h5>
+    </div>
+    <div class="card-body">
+        {% if incoming_requests %}
+        <div class="row g-3">
+            {% for req in incoming_requests %}
+            <div class="col-md-6">
+                <div class="card request-card border h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">{{ req.service.name }}</h6>
+                            <span class="badge bg-status-requested">New</span>
+                        </div>
+                        <p class="small mb-1">
+                            <i class="bi bi-person text-muted"></i> {{ req.customer.name }}
+                        </p>
+                        <p class="small mb-1">
+                            <i class="bi bi-geo-alt text-muted"></i> {{ req.customer_address or req.customer.address or 'Not specified' }}
+                            {% if req.customer_pin_code %} · {{ req.customer_pin_code }}{% endif %}
+                        </p>
+                        <p class="small mb-1">
+                            <i class="bi bi-calendar text-muted"></i>
+                            Requested: {{ req.date_of_request.strftime('%d %b %Y') }}
+                            {% if req.preferred_date %}
+                                · Preferred: {{ req.preferred_date.strftime('%d %b %Y') }}
+                            {% endif %}
+                        </p>
+                        {% if req.remarks %}
+                        <p class="small text-muted mb-2">
+                            <i class="bi bi-chat-left-text"></i> {{ req.remarks }}
+                        </p>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('professional.accept_request', request_id=req.id) }}" class="mt-3">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success btn-sm w-100">
+                                <i class="bi bi-check-lg"></i> Accept Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mt-2">No incoming requests at the moment</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ─── Active Jobs ──────────────────────────────────────── -->
+<div class="card mb-4">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-briefcase text-primary"></i> Active Jobs</h5>
+    </div>
+    <div class="card-body">
+        {% if active_requests %}
+        <div class="row g-3">
+            {% for req in active_requests %}
+            <div class="col-md-6">
+                <div class="card request-card border h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">{{ req.service.name }}</h6>
+                            <span class="badge bg-status-assigned">In Progress</span>
+                        </div>
+                        <p class="small mb-1">
+                            <i class="bi bi-person text-muted"></i> {{ req.customer.name }}
+                        </p>
+                        <p class="small mb-1">
+                            <i class="bi bi-geo-alt text-muted"></i> {{ req.customer_address or 'Not specified' }}
+                        </p>
+                        <div class="d-flex gap-2 mt-3">
+                            <form method="POST" action="{{ url_for('professional.complete_request', request_id=req.id) }}" class="flex-fill">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-check-circle"></i> Complete
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-outline-primary btn-sm flex-fill chat-trigger"
+                                    data-req-id="{{ req.id }}"
+                                    data-customer-name="{{ req.customer.name }}"
+                                    data-service-name="{{ req.service.name }}">
+                                <i class="bi bi-chat-left-dots"></i> Message
+                            </button>
+                            <form method="POST" action="{{ url_for('professional.reject_request', request_id=req.id) }}" class="flex-fill">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                        onclick="return confirm('Reject this request?');">
+                                    <i class="bi bi-x-lg"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-briefcase fs-1"></i>
+            <p class="mt-2">No active jobs</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ─── Recently Completed ───────────────────────────────── -->
+{% if completed_requests %}
+<div class="card">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-check-circle text-success"></i> Recently Completed</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Customer</th>
+                        <th>Completed</th>
+                        <th>Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in completed_requests %}
+                    <tr>
+                        <td class="fw-medium">{{ req.service.name }}</td>
+                        <td>{{ req.customer.name }}</td>
+                        <td class="text-muted small">{{ req.date_of_completion.strftime('%d %b %Y') if req.date_of_completion else '—' }}</td>
+                        <td>
+                            {% if req.review %}
+                            <span class="text-warning">
+                                {% for i in range(req.review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                                {% for i in range(5 - req.review.rating) %}<i class="bi bi-star"></i>{% endfor %}
+                            </span>
+                            {% else %}
+                            <span class="text-muted small">Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Chat Modal -->
+<div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="chatModalLabel">Chat Coordinator</h5>
+                    <small class="text-muted" id="chatModalSubtitle"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-2 border-top-0">
+                <form id="chatForm" class="d-flex w-100 gap-2">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type your message here..." required>
+                    <button type="submit" class="btn btn-primary px-3"><i class="bi bi-send-fill"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatModalEl = document.getElementById('chatModal');
+    if (!chatModalEl) return;
+    
+    const chatModal = new bootstrap.Modal(chatModalEl);
+    const chatModalLabel = document.getElementById('chatModalLabel');
+    const chatModalSubtitle = document.getElementById('chatModalSubtitle');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    
+    let activeCustomerName = '';
+    let activeServiceName = '';
+    
+    // Set up triggers
+    document.querySelectorAll('.chat-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            activeCustomerName = trigger.getAttribute('data-customer-name');
+            activeServiceName = trigger.getAttribute('data-service-name');
+            
+            chatModalLabel.innerText = `Chat with ${activeCustomerName}`;
+            chatModalSubtitle.innerText = `Service: ${activeServiceName}`;
+            
+            // Set up initial simulated conversation (from professional's view)
+            chatMessages.innerHTML = `
+                <div class="chat-bubble chat-bubble-sent">
+                    Hello! I have been assigned to your request for <strong>${activeServiceName}</strong>.
+                </div>
+                <div class="chat-bubble chat-bubble-sent">
+                    I will be visiting your address on the scheduled day. Do you have any specific instructions for me?
+                </div>
+                <div class="chat-bubble chat-bubble-received">
+                    Yes, please call me when you reach. Thank you!
+                </div>
+            `;
+            
+            chatModal.show();
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 150);
+        });
+    });
+    
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msgText = chatInput.value.trim();
+        if (!msgText) return;
+        
+        // Append sent message
+        const sentBubble = document.createElement('div');
+        sentBubble.className = 'chat-bubble chat-bubble-sent';
+        sentBubble.innerText = msgText;
+        chatMessages.appendChild(sentBubble);
+        
+        chatInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Simulated reply after 1.2 seconds
+        setTimeout(() => {
+            const replies = [
+                "Perfect! See you then.",
+                "Thank you, let me know if anything changes.",
+                "That works for me.",
+                "Great, thanks!"
+            ];
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            
+            const replyBubble = document.createElement('div');
+            replyBubble.className = 'chat-bubble chat-bubble-received';
+            replyBubble.innerText = randomReply;
+            chatMessages.appendChild(replyBubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1200);
+    });
+});
+</script>
+{% endblock %}
