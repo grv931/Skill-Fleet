@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Search Users | SkillFleet{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h1 class="h2 fw-bold mb-1"><i class="bi bi-search"></i> Search Users</h1>
+    <p class="text-muted mb-0">Find professionals and customers</p>
+</div>
+
+<!-- Search Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label for="query" class="form-label fw-medium">Search Query</label>
+                <input type="text" class="form-control" id="query" name="query"
+                       value="{{ query }}" placeholder="Enter name, pin code, or service type...">
+            </div>
+            <div class="col-md-3">
+                <label for="search_type" class="form-label fw-medium">Search By</label>
+                <select class="form-select" id="search_type" name="search_type">
+                    <option value="name" {{ 'selected' if search_type == 'name' }}>Name</option>
+                    <option value="pin_code" {{ 'selected' if search_type == 'pin_code' }}>Pin Code</option>
+                    <option value="service" {{ 'selected' if search_type == 'service' }}>Service Type</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+{% if query %}
+<div class="card">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fw-semibold">
+            Results for "{{ query }}" <span class="badge bg-secondary">{{ results|length }}</span>
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% if results %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Pin Code</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in results %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar-circle avatar-sm me-3" style="font-size: 0.75rem; background: {% if user.role == 'professional' %}linear-gradient(135deg, #10b981 0%, #059669 100%){% else %}linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%){% endif %};">
+                                    {{ user.name.split() | map('first') | join('') | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ user.name }}</div>
+                                    <small class="text-muted">@{{ user.username }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-role-{{ user.role }}">{{ user.role|capitalize }}</span>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.pin_code or '—' }}</td>
+                        <td>
+                            {% if not user.is_active %}
+                                <span class="badge bg-danger">Blocked</span>
+                            {% elif user.role == 'professional' and not user.is_approved %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                                <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if user.role == 'professional' %}
+                                <form method="POST" action="{{ url_for('admin.toggle_block_professional', user_id=user.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm {{ 'btn-outline-success' if not user.is_active else 'btn-outline-danger' }}">
+                                        <i class="bi {{ 'bi-unlock' if not user.is_active else 'bi-lock' }}"></i>
+                                        {{ 'Unblock' if not user.is_active else 'Block' }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="POST" action="{{ url_for('admin.toggle_block_customer', user_id=user.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm {{ 'btn-outline-success' if not user.is_active else 'btn-outline-danger' }}">
+                                        <i class="bi {{ 'bi-unlock' if not user.is_active else 'bi-lock' }}"></i>
+                                        {{ 'Unblock' if not user.is_active else 'Block' }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-search fs-1"></i>
+            <p class="mt-2">No results found for "{{ query }}"</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

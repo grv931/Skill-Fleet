@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | SkillFleet{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold mb-1"><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+        <p class="text-muted mb-0">Overview of your platform's performance</p>
+    </div>
+</div>
+
+<!-- ─── Stat Cards ────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--primary);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Total Services</p>
+                        <h3 class="fw-bold mb-0">{{ total_services }}</h3>
+                    </div>
+                    <div class="stat-icon text-primary">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--success);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Professionals</p>
+                        <h3 class="fw-bold mb-0">{{ total_professionals }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--info);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Customers</p>
+                        <h3 class="fw-bold mb-0">{{ total_customers }}</h3>
+                    </div>
+                    <div class="stat-icon text-info">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card h-100" style="border-left: 4px solid var(--warning);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Pending Approvals</p>
+                        <h3 class="fw-bold mb-0">{{ pending_approvals }}</h3>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Charts Row ───────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-pie-chart"></i> Requests by Status</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="requestsStatusChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-bar-chart"></i> Requests per Service</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="requestsServiceChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Request Summary + Recent ─────────────────────────── -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-clipboard-data"></i> Request Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 border" style="background: var(--body-bg);">
+                    <span><i class="bi bi-circle-fill text-warning me-2"></i>Requested</span>
+                    <span class="badge bg-warning text-dark fs-6">{{ requested_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 border" style="background: var(--body-bg);">
+                    <span><i class="bi bi-circle-fill text-primary me-2"></i>Assigned</span>
+                    <span class="badge bg-primary fs-6">{{ assigned_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-3 rounded-3 border" style="background: var(--body-bg);">
+                    <span><i class="bi bi-circle-fill text-success me-2"></i>Closed</span>
+                    <span class="badge bg-success fs-6">{{ closed_count }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background: var(--card-bg);">
+                    <span class="fw-bold">Total</span>
+                    <span class="badge bg-dark fs-6">{{ total_requests }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-clock-history"></i> Recent Requests</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_requests %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Service</th>
+                                <th>Customer</th>
+                                <th>Professional</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in recent_requests %}
+                            <tr>
+                                <td><span class="fw-medium">{{ req.id }}</span></td>
+                                <td>{{ req.service.name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar-circle avatar-sm me-2" style="font-size: 0.75rem; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
+                                            {{ req.customer.name.split() | map('first') | join('') | upper }}
+                                        </div>
+                                        <span>{{ req.customer.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if req.professional %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar-circle avatar-sm me-2" style="font-size: 0.75rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                            {{ req.professional.name.split() | map('first') | join('') | upper }}
+                                        </div>
+                                        <span>{{ req.professional.name }}</span>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-status-{{ req.service_status }}">
+                                        {{ req.service_status|capitalize }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ req.date_of_request.strftime('%d %b %Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No service requests yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
