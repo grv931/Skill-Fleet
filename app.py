@@ -74,10 +74,12 @@ def seed_admin():
         print(' * Admin user created (email: admin@skillfleet.com, password: admin123)')
 
 
+# ─── Initialize Database & Seed Admin ───────────────────────
+with app.app_context():
+    db.create_all()
+    seed_admin()
+
 # ─── Main ────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        seed_admin()
     app.run(debug=True, port=5000)
