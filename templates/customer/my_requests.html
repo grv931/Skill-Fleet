@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}My Requests | SkillFleet{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold mb-1"><i class="bi bi-list-check"></i> My Service Requests</h1>
+        <p class="text-muted mb-0">Track and manage all your service requests</p>
+    </div>
+    <a href="{{ url_for('customer.search') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> New Request
+    </a>
+</div>
+
+{% if requests %}
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>Requested</th>
+                        <th>Preferred Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td><span class="fw-medium">{{ req.id }}</span></td>
+                        <td>
+                            <div class="fw-medium">{{ req.service.name }}</div>
+                            <small class="text-muted">₹{{ "%.0f"|format(req.service.base_price) }}</small>
+                        </td>
+                        <td>
+                            {% if req.professional %}
+                                <div>{{ req.professional.name }}</div>
+                                {% if req.professional.average_rating > 0 %}
+                                <small class="text-warning"><i class="bi bi-star-fill"></i> {{ req.professional.average_rating }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Awaiting assignment</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ req.date_of_request.strftime('%d %b %Y') }}</td>
+                        <td class="text-muted small">{{ req.preferred_date.strftime('%d %b %Y') if req.preferred_date else '—' }}</td>
+                        <td>
+                            <span class="badge bg-status-{{ req.service_status }}">{{ req.service_status|capitalize }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                {% if req.service_status == 'requested' %}
+                                    <a href="{{ url_for('customer.edit_request', request_id=req.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                {% endif %}
+                                {% if req.service_status == 'assigned' %}
+                                    <form method="POST" action="{{ url_for('customer.close_request', request_id=req.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-success"
+                                                onclick="return confirm('Close this service request?');">
+                                            <i class="bi bi-check-circle"></i> Close
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                {% if req.service_status == 'closed' and not req.review %}
+                                    <a href="{{ url_for('customer.review_request', request_id=req.id) }}" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-star"></i> Review
+                                    </a>
+                                {% elif req.service_status == 'closed' and req.review %}
+                                    <span class="text-warning small">
+                                        {% for i in range(req.review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-inbox fs-1 text-muted"></i>
+    <p class="text-muted mt-2">You haven't made any service requests yet.</p>
+    <a href="{{ url_for('customer.search') }}" class="btn btn-primary">
+        <i class="bi bi-search"></i> Browse Services
+    </a>
+</div>
+{% endif %}
+{% endblock %}

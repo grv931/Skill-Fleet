@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}My Profile | SkillFleet{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="mb-4">
+            <h1 class="h2 fw-bold mb-1"><i class="bi bi-person-circle"></i> My Profile</h1>
+            <p class="text-muted mb-0">Your professional profile and reviews</p>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3 class="fw-bold mb-1">{{ current_user.name }}</h3>
+                        <p class="text-muted mb-3">@{{ current_user.username }} · {{ current_user.email }}</p>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6 col-md-4">
+                                <small class="text-muted d-block">Service Type</small>
+                                <span class="fw-medium">
+                                    {% if current_user.service_type %}
+                                        <span class="badge bg-primary-subtle text-primary">{{ current_user.service_type.name }}</span>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <small class="text-muted d-block">Experience</small>
+                                <span class="fw-medium">{{ current_user.experience }} years</span>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <small class="text-muted d-block">Pin Code</small>
+                                <span class="fw-medium">{{ current_user.pin_code or '—' }}</span>
+                            </div>
+                        </div>
+
+                        {% if current_user.description %}
+                        <div>
+                            <small class="text-muted d-block mb-1">About</small>
+                            <p class="mb-0">{{ current_user.description }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-3 rounded-3 bg-light">
+                            <div class="display-4 fw-bold text-warning">
+                                {% if current_user.average_rating > 0 %}
+                                    {{ current_user.average_rating }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                            <div class="text-warning mb-1">
+                                {% if current_user.average_rating > 0 %}
+                                    {% for i in range(current_user.average_rating|int) %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% endfor %}
+                                    {% for i in range(5 - current_user.average_rating|int) %}
+                                        <i class="bi bi-star"></i>
+                                    {% endfor %}
+                                {% else %}
+                                    <i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">{{ current_user.total_reviews }} review{{ 's' if current_user.total_reviews != 1 }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="card">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-chat-left-quote"></i> Customer Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="mb-3 p-3 bg-light rounded-3 {{ '' if loop.last else 'border-bottom' }}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="fw-medium">{{ review.reviewer.name }}</span>
+                                <span class="text-muted small ms-2">{{ review.date_created.strftime('%d %b %Y') }}</span>
+                            </div>
+                            <span class="text-warning">
+                                {% for i in range(review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                                {% for i in range(5 - review.rating) %}<i class="bi bi-star"></i>{% endfor %}
+                            </span>
+                        </div>
+                        {% if review.comment %}
+                        <p class="mb-0 text-muted">{{ review.comment }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-chat-left-quote fs-1"></i>
+                    <p class="mt-2">No reviews yet. Complete more jobs to get customer feedback!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
