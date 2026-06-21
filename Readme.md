@@ -1,6 +1,10 @@
 # 🛠️ SkillFleet — Modern Household Services Platform
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Render-brightgreen.svg)](https://skill-fleet.onrender.com/login)
+
 **SkillFleet** is a comprehensive, three-role marketplace platform designed to bridge the gap between service customers and professional household service providers (e.g. plumbers, cleaners, technicians). Built as a high-fidelity SaaS web application, it offers interactive workflows, custom admin stats, live chat simulations, and a fully responsive interface.
+
+🔗 **Live Link**: [https://skill-fleet.onrender.com/login](https://skill-fleet.onrender.com/login)
 
 ---
 
@@ -86,8 +90,8 @@ To set up and run SkillFleet locally:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/skillfleet.git
-cd skillfleet
+git clone https://github.com/grv931/Skill-Fleet.git
+cd Skill-Fleet
 ```
 
 ### 2. Configure Virtual Environment
@@ -155,10 +159,10 @@ If you populated the database using `seed_test_data.py`, use the following crede
 
 ## 🔮 Future Roadmap
 
+*   🚀 **Production Deployment**: Completed initial production release on Render. Live at [https://skill-fleet.onrender.com/login](https://skill-fleet.onrender.com/login).
 *   🔗 **Live Stripe Connect Integration**: Enable actual billing transactions, handling escrow locks, and release of professional payouts upon completion.
 *   📍 **Geofenced Search (Geo-Proximity)**: Match customers with professionals based on live coordinates using OpenStreetMap integration.
 *   📊 **Exportable Analytics Reports**: Allow administrators to export PDF/CSV files of monthly billing audits, request lists, and reviews.
-*   🚀 **Production Deployment**: Migrate local SQLite to PostgreSQL and deploy onto platforms like Heroku, AWS, or Render.
 
 ---
 
@@ -181,5 +185,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 👤 Author
 
-*   **Your Name** - [GitHub Profile](https://github.com/yourusername) · [LinkedIn Profile](https://linkedin.com/in/yourprofile)
-*   Project Repository: [https://github.com/yourusername/skillfleet](https://github.com/yourusername/skillfleet)
+*   **grv931** - [GitHub Profile](https://github.com/grv931)
+*   Project Repository: [https://github.com/grv931/Skill-Fleet](https://github.com/grv931/Skill-Fleet)
