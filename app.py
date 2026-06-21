@@ -7,7 +7,7 @@ from models import db, User
 # ─── App Factory ─────────────────────────────────────────────
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'skillfleet-secret-key-change-in-production'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'skillfleet-dev-secret-key-fallback')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///skillfleet.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
